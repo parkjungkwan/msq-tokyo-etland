@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.etland.web.prd.ProductMapper">
+
+<resultMap id="ProductMap" type="hashmap">
+  <id property="rownum" column="ROWNUM" />
+  <result property="productID" column="PRODUCT_ID" />
+  <result property="productName" column="PRODUCT_NAME"/>
+  <result property="supplierID" column="SUPPLIER_ID"/>
+  <result property="supplierName" column="SUPPLIER_NAME"/>
+  <result property="unit" column="UNIT"/>
+  <result property="price" column="PRICE"/>
+</resultMap>
+
+
+	<select id="selectProducts" 
+		resultMap="ProductMap"
+		parameterType="com.etland.web.cmm.Proxy">
+	   SELECT @ROWNUM:=@ROWNUM+1 AS ROWNUM,
+	    P.*    
+	    FROM PRODUCTS P, (SELECT @ROWNUM:=0) PRO
+	    ORDER BY rownum DESC
+	    LIMIT #{startRow},#{pageSize} 
+
+	</select>
+	
+	<select id="countAllProducts" resultType="int">
+	  	 SELECT COUNT(*) 
+	  	 FROM CUSTOMERS 
+	</select>
+	
+	
+	<select id="searchProducts" 
+		resultMap="ProductMap" 
+		parameterType="com.etland.web.cmm.Proxy">
+		
+		   SELECT *
+		   FROM	(SELECT @ROWNUM:=@ROWNUM+1 ROWNUM,
+							P.PRODUCT_NAME,
+							P.UNIT,
+							P.PRICE,
+							S.ADDRESS,
+							S.CITY,
+							S.SUPPLIER_NAME
+					FROM PRODUCTS P JOIN SUPPLIERS S ON P.SUPPLIER_ID LIKE S.SUPPLIER_ID ,
+						(SELECT @ROWNUM:=0)TMP) T
+			WHERE T.PRODUCT_NAME LIKE '%${search}%'
+				OR T.SUPPLIER_NAME LIKE '%${search}%' 
+				OR T.ADDRESS LIKE '%${search}%'
+				OR T.CITY LIKE '%${search}%'
+			LIMIT #{startRow}, #{pageSize}
+
+	</select>
+	<select id="countSearchProducts" 
+		resultType="int" 
+		parameterType="string">
+		
+		   SELECT COUNT(*)
+		   FROM	(SELECT @ROWNUM:=@ROWNUM+1 RNUM,
+							P.PRODUCT_NAME,
+							P.UNIT,
+							P.PRICE,
+							S.ADDRESS,
+							S.CITY,
+							S.SUPPLIER_NAME
+					FROM PRODUCTS P JOIN SUPPLIERS S ON P.SUPPLIER_ID LIKE S.SUPPLIER_ID ,
+						(SELECT @ROWNUM:=0)TMP) T
+			WHERE T.PRODUCT_NAME LIKE '%${value}%'
+				OR T.SUPPLIER_NAME LIKE '%${value}%' 
+				OR T.ADDRESS LIKE '%${value}%'
+				OR T.CITY LIKE '%${value}%'
+			
+
+	</select>
+	
+</mapper>
+
+
+
+
+
